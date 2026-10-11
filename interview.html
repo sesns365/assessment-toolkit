@@ -48,16 +48,16 @@
       </div>
       <section class="action-bar" aria-label="儲存與下載">
         <div class="action-primary">
-          <button id="export-docx" type="button" class="button button-primary">下載已填 Word</button>
+          <button id="print-form" type="button" class="button button-primary">下載已填 PDF</button>
+          <button id="export-docx" type="button" class="button">下載已填 Word</button>
           <button id="export-json" type="button" class="button">下載備份</button>
           <button id="import-json" type="button" class="button button-quiet">讀回備份</button>
           <input id="import-file" type="file" accept=".json,application/json" hidden>
         </div>
         <details class="more-actions">
-          <summary>其他下載與列印 <span aria-hidden="true">⌄</span></summary>
+          <summary>其他下載 <span aria-hidden="true">⌄</span></summary>
           <div class="more-menu">
             <button id="export-txt" type="button">下載純文字</button>
-            <button id="print-form" type="button">列印／存成 PDF</button>
             <a id="blank-template" href="#" download>下載空白原範本</a>
           </div>
         </details>
@@ -76,7 +76,6 @@
   </main>
   <footer class="page-footer"><span>內容僅儲存在此瀏覽器</span><a href="guide.html">使用說明</a></footer>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-  <div id="print-view" aria-hidden="true"></div>
   <dialog id="name-dialog" aria-labelledby="name-dialog-title">
     <form id="name-dialog-form">
       <h2 id="name-dialog-title">草稿名稱</h2>

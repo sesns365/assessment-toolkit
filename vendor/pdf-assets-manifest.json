@@ -1,0 +1,36 @@
+{
+  "pdfmake": {
+    "version": "0.2.20",
+    "integrity": "sha512-bGbxbGFP5p8PWNT3Phsu1ZcRLnRfF6jmnuKTkgmt6i5PZzSdX6JaB+NeTz9q+aocfW8SE9GUjL3o/5GroBqGcQ==",
+    "localPatch": "PDFKit toUnicodeCmap: emit O.length beginbfrange instead of literal 1 for searchable CJK subsets with more than 256 glyphs."
+  },
+  "fonts": {
+    "repository": "https://github.com/notofonts/noto-cjk",
+    "commit": "f8d157532fbfaeda587e826d4cd5b21a49186f7c",
+    "files": {
+      "NotoSerifTC-Regular.otf": {
+        "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Serif/OTF/TraditionalChinese/NotoSerifCJKtc-Regular.otf",
+        "sourceGitBlob": "a59de8d047a3ed619164a57b231e51856762ef56",
+        "sourceSha256": "234301038e76e7c35c43113785024700c4e4fe7bdce1d1fbbc42fca7e6683798",
+        "sha256": "156710dd259febed754ab0c3a17e206d7322d323330546084bad1b066555146d",
+        "bytes": 20687600,
+        "unicodeCodepoints": 44777,
+        "modification": "Preserve every Unicode cmap entry; remove unencoded alternate layout glyphs, desubroutinize."
+      },
+      "NotoSerifTC-Bold.otf": {
+        "url": "https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Serif/SubsetOTF/TC/NotoSerifTC-Bold.otf",
+        "sha256": "3ca2b3294ec84b795d0a45695e78e3612a44dce50f9fc776cd40206340a5768d",
+        "bytes": 8253304
+      }
+    }
+  },
+  "fontChunks": [
+    "noto-serif-tc-chunk-1.js",
+    "noto-serif-tc-chunk-2.js",
+    "noto-serif-tc-chunk-3.js",
+    "noto-serif-tc-chunk-4.js",
+    "noto-serif-tc-chunk-5.js",
+    "noto-serif-tc-chunk-6.js"
+  ],
+  "fontChunkReassembly": "Base64 split into script assets; font bytes are unchanged."
+}

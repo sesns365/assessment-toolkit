@@ -6,7 +6,6 @@
   const MAX_FILE_BYTES = 40 * 1024 * 1024;
   const MAX_TEXT = 100000;
   const MAX_DRAFTS = 100;
-  const encoder = new TextEncoder();
   let def, formKey, fieldList, fieldMap, state, storageKey;
   let saveTimer, toastTimer, nameMode = 'rename', dirty = false;
   let storageBlocked = false, storageReason = '', lastStorageRaw = null;
@@ -330,72 +329,50 @@
     } finally { $('import-file').value = ''; }
   }
 
-  // Minimal standards-compliant OOXML package, with ZIP stored entries and CRC-32.
-  // Generated locally so no content or dependencies leave the browser.
-  const crcTable = new Uint32Array(256);
-  for (let i=0;i<256;i++) { let c=i; for(let j=0;j<8;j++) c=(c&1) ? 0xedb88320^(c>>>1) : c>>>1; crcTable[i]=c>>>0; }
-  function crc32(bytes) { let c=0xffffffff; for(const byte of bytes)c=crcTable[(c^byte)&255]^(c>>>8); return (c^0xffffffff)>>>0; }
-  function makeZip(entries) {
-    const chunks=[], central=[]; let offset=0;
-    const u16=(view,at,value)=>view.setUint16(at,value,true), u32=(view,at,value)=>view.setUint32(at,value,true);
-    for(const [name,value] of entries) {
-      const filename=encoder.encode(name), bytes=typeof value==='string'?encoder.encode(value):value, crc=crc32(bytes);
-      const head=new Uint8Array(30+filename.length), hv=new DataView(head.buffer);
-      u32(hv,0,0x04034b50);u16(hv,4,20);u16(hv,6,0x0800);u16(hv,8,0);u16(hv,12,0x0021);u32(hv,14,crc);u32(hv,18,bytes.length);u32(hv,22,bytes.length);u16(hv,26,filename.length);head.set(filename,30);
-      const cd=new Uint8Array(46+filename.length), cv=new DataView(cd.buffer);
-      u32(cv,0,0x02014b50);u16(cv,4,20);u16(cv,6,20);u16(cv,8,0x0800);u16(cv,10,0);u16(cv,14,0x0021);u32(cv,16,crc);u32(cv,20,bytes.length);u32(cv,24,bytes.length);u16(cv,28,filename.length);u32(cv,42,offset);cd.set(filename,46);
-      chunks.push(head,bytes);central.push(cd);offset+=head.length+bytes.length;
-    }
-    const centralSize=central.reduce((sum,chunk)=>sum+chunk.length,0), end=new Uint8Array(22), ev=new DataView(end.buffer);
-    u32(ev,0,0x06054b50);u16(ev,8,entries.length);u16(ev,10,entries.length);u32(ev,12,centralSize);u32(ev,16,offset);
-    const result=new Uint8Array(offset+centralSize+end.length); let at=0;
-    for(const chunk of [...chunks,...central,end]){result.set(chunk,at);at+=chunk.length;}return result;
+  const exportScriptLoads = new Map();
+  function loadExportScript(path) {
+    if (exportScriptLoads.has(path)) return exportScriptLoads.get(path);
+    const promise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = path;
+      script.onload = resolve;
+      script.onerror = () => { script.remove(); exportScriptLoads.delete(path); reject(new Error('匯出元件未能載入，請稍後再試。')); };
+      document.head.append(script);
+    });
+    exportScriptLoads.set(path, promise);
+    return promise;
   }
-  function xml(value) { return String(value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); }
-  function paragraph(value, style='Normal', bold=false) {
-    const lines=String(value).replace(/\r\n/g,'\n').split('\n');
-    return '<w:p><w:pPr><w:pStyle w:val="'+style+'"/></w:pPr><w:r>'+(bold?'<w:rPr><w:b/></w:rPr>':'')+lines.map((line,index)=>(index?'<w:br/>':'')+'<w:t xml:space="preserve">'+xml(line)+'</w:t>').join('')+'</w:r></w:p>';
+  async function loadTemplateExport() {
+    await loadExportScript('template-data.js');
+    await loadExportScript('template-export.js');
   }
-  function buildDocx(definition, draft) {
-    const body=[paragraph(definition.title,'Title'),paragraph('填寫整理版（依原範本問項整理，版面與原範本不同）','Subtitle'),paragraph('草稿名稱：'+draft.name,'Meta'),paragraph('匯出時間：'+displayTime(now()),'Meta')];
-    if(definition.description) body.push(paragraph(definition.description,'Description'));
-    for(const section of definition.sections){
-      body.push(paragraph(section.title,'Heading1'));
-      if(section.description)body.push(paragraph(section.description,'Description'));
-      for(const field of section.fields){
-        body.push(paragraph(field.label,'Question',true));
-        if(field.hint)body.push(paragraph('填寫提示：'+field.hint,'Hint'));
-        body.push(paragraph(answerText(field,draft.answers),'Answer'));
+  async function exportDocument(kind) {
+    saveNow();
+    const draft = getActive();
+    const answers = structuredClone(draft.answers);
+    const filename = safeFilename(def.title + '_' + draft.name);
+    const button = $(kind === 'pdf' ? 'print-form' : 'export-docx');
+    const label = button.textContent;
+    button.disabled = true;
+    button.textContent = '正在製作 ' + kind.toUpperCase() + '…';
+    try {
+      await loadTemplateExport();
+      if (kind === 'pdf') {
+        await loadExportScript('vendor/pdfmake.min.js');
+        for (let part = 1; part <= 6; part++) await loadExportScript('vendor/noto-serif-tc-chunk-' + part + '.js');
+        await loadExportScript('vendor/noto-serif-tc.js');
+        await loadExportScript('template-pdf.js');
+        const blob = await window.TemplatePdf.buildBlob(formKey, answers);
+        download(blob, filename + '.pdf', 'application/pdf');
+      } else {
+        download(window.TemplateExport.buildDocx(formKey, answers), filename + '.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
       }
-    }
-    const ns='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
-    const documentXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="'+ns+'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+body.join('')+'<w:sectPr><w:footerReference w:type="default" r:id="rId2"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567"/><w:cols w:space="425"/></w:sectPr></w:body></w:document>';
-    const styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="'+ns+'"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Microsoft JhengHei"/><w:sz w:val="22"/><w:lang w:val="zh-TW" w:eastAsia="zh-TW"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="100" w:line="320" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:after="220"/></w:pPr><w:rPr><w:b/><w:color w:val="214C43"/><w:sz w:val="36"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Subtitle"><w:name w:val="Subtitle"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/></w:pPr><w:rPr><w:color w:val="666666"/><w:sz w:val="20"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Meta"><w:name w:val="Metadata"/><w:basedOn w:val="Normal"/><w:rPr><w:color w:val="666666"/><w:sz w:val="18"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="320" w:after="140"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:color w:val="214C43"/><w:sz w:val="28"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Question"><w:name w:val="Question"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="60"/></w:pPr><w:rPr><w:b/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Answer"><w:name w:val="Answer"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="160"/><w:ind w:left="140"/></w:pPr></w:style><w:style w:type="paragraph" w:styleId="Description"><w:name w:val="Description"/><w:basedOn w:val="Normal"/><w:rPr><w:color w:val="666666"/><w:sz w:val="20"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Hint"><w:name w:val="Hint"/><w:basedOn w:val="Description"/><w:pPr><w:keepNext/></w:pPr></w:style></w:styles>';
-    const relns='http://schemas.openxmlformats.org/package/2006/relationships';
-    return makeZip([
-      ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>'],
-      ['_rels/.rels','<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="'+relns+'"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'],
-      ['word/document.xml',documentXml],['word/styles.xml',styles],
-      ['word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="'+relns+'"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>'],
-      ['word/footer1.xml','<?xml version="1.0" encoding="UTF-8"?><w:ftr xmlns:w="'+ns+'"><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:sz w:val="18"/></w:rPr><w:t>第 </w:t></w:r><w:fldSimple w:instr="PAGE"/><w:r><w:rPr><w:sz w:val="18"/></w:rPr><w:t> 頁</w:t></w:r></w:p></w:ftr>']
-    ]);
-  }
-  function preparePrint() {
-    const target=$('print-view'),draft=getActive(); target.replaceChildren();
-    appendText(target,'h1','',def.title);
-    appendText(target,'p','print-meta','填寫整理版（依原範本問項整理，版面與原範本不同）');
-    appendText(target,'p','print-meta','草稿名稱：'+draft.name+'　｜　匯出時間：'+displayTime(now()));
-    if(def.description)appendText(target,'p','print-description',def.description);
-    for(const section of def.sections){
-      appendText(target,'h2','',section.title);
-      if(section.description)appendText(target,'p','print-description',section.description);
-      for(const field of section.fields){
-        const block=document.createElement('div');block.className='print-field';
-        appendText(block,'h3','print-label',field.label);
-        if(field.hint)appendText(block,'p','print-description','填寫提示：'+field.hint);
-        appendText(block,'p','print-answer'+(filled(draft.answers[field.id])?'':' print-empty'),answerText(field,draft.answers));
-        target.append(block);
-      }
+      toast('已交由瀏覽器下載原範本版式的 ' + kind.toUpperCase() + '。');
+    } catch (error) {
+      toast(error.message || '匯出未完成，請先下載備份保留內容。');
+    } finally {
+      button.disabled = false;
+      button.textContent = label;
     }
   }
   function wireEvents() {
@@ -438,14 +415,8 @@
     $('export-txt').addEventListener('click',()=>{
       saveNow(); download('\uFEFF'+exportText(def,getActive()),safeFilename(def.title+'_'+getActive().name)+'.txt','text/plain;charset=utf-8');toast('已交由瀏覽器下載純文字檔。');
     });
-    $('export-docx').addEventListener('click',()=>{
-      saveNow();const button=$('export-docx');button.disabled=true;
-      try{download(buildDocx(def,getActive()),safeFilename(def.title+'_'+getActive().name)+'_填寫整理版.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document');toast('已交由瀏覽器下載可編輯的 Word 整理版。');}
-      catch(error){toast('Word 匯出未完成，請先下載備份保留內容。');}
-      finally{button.disabled=false;}
-    });
-    $('print-form').addEventListener('click',()=>{saveNow();preparePrint();window.print();});
-    window.addEventListener('beforeprint',preparePrint);
+    $('export-docx').addEventListener('click',()=>exportDocument('docx'));
+    $('print-form').addEventListener('click',()=>exportDocument('pdf'));
     window.addEventListener('beforeunload',event=>{if(dirty&&!saveNow()){event.preventDefault();event.returnValue='';}});
     window.addEventListener('pagehide',saveNow);
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow();});
@@ -476,6 +447,6 @@
     }catch(error){$('fatal-error').textContent=error.message||'目前無法載入表單，請返回工具集重試。';$('fatal-error').hidden=false;}
   }
   // Exposed pure functions enable package-integrity and import-validation tests.
-  window.AssessmentFormUtils=Object.freeze({validateAnswers,validateBackup,validateStore,buildDocx,exportText,makeZip,crc32});
+  window.AssessmentFormUtils=Object.freeze({validateAnswers,validateBackup,validateStore,exportText});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

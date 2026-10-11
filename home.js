@@ -43,8 +43,6 @@ function refreshDrafts() {
     if (!status) continue;
     status.hidden = available && count === 0;
     status.textContent = available ? (count ? `本機有 ${count} 份草稿` : '') : '無法讀取本機草稿';
-    const action = status.closest('.resource-card').querySelector('.action-label');
-    if (action) action.textContent = count ? '接續' : '填寫';
   }
 }
 
