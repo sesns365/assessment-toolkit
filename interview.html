@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>訪談紀錄填寫｜鑑定評估工具集</title>
+  <link rel="stylesheet" href="interview.css">
+  <script src="forms-data.js" defer></script>
+  <script src="interview.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#form-content">跳至填寫內容</a>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="back-link" href="index.html"><span aria-hidden="true">←</span> 返回工具集</a>
+      <span class="local-badge"><span class="status-dot" aria-hidden="true"></span> 本機暫存</span>
+    </div>
+  </header>
+  <main class="page-shell">
+    <section class="intro" aria-labelledby="page-title">
+      <h1 id="page-title">載入訪談紀錄表</h1>
+      <details class="form-description-disclosure">
+        <summary>表單說明</summary>
+        <p id="form-description" class="intro-description"></p>
+      </details>
+    </section>
+
+    <div id="fatal-error" class="notice notice-error" role="alert" hidden></div>
+    <div id="editor" hidden>
+      <section class="draft-panel" aria-labelledby="draft-heading">
+        <div class="draft-main">
+          <label id="draft-heading" for="draft-select">我的本機草稿</label>
+          <select id="draft-select" aria-describedby="draft-meta"></select>
+          <div class="draft-actions">
+            <button id="new-draft" class="button button-small" type="button">新增</button>
+            <button id="rename-draft" class="button button-small" type="button">改名</button>
+            <button id="delete-draft" class="button button-small button-danger" type="button">刪除</button>
+          </div>
+        </div>
+        <div class="save-row"><p id="draft-meta" class="muted"></p><p id="save-status" role="status" aria-live="polite"></p></div>
+      </section>
+
+      <div id="storage-warning" class="notice notice-warning" role="alert" hidden>
+        <p id="storage-warning-text"></p>
+        <button id="retry-storage" class="button button-small" type="button">重試本機暫存</button>
+      </div>
+      <section class="action-bar" aria-label="儲存與下載">
+        <div class="action-primary">
+          <button id="export-docx" type="button" class="button button-primary">下載已填 Word</button>
+          <button id="export-json" type="button" class="button">下載備份</button>
+          <button id="import-json" type="button" class="button button-quiet">讀回備份</button>
+          <input id="import-file" type="file" accept=".json,application/json" hidden>
+        </div>
+        <details class="more-actions">
+          <summary>其他下載與列印 <span aria-hidden="true">⌄</span></summary>
+          <div class="more-menu">
+            <button id="export-txt" type="button">下載純文字</button>
+            <button id="print-form" type="button">列印／存成 PDF</button>
+            <a id="blank-template" href="#" download>下載空白原範本</a>
+          </div>
+        </details>
+      </section>
+      <div class="editor-layout">
+        <aside class="section-sidebar" aria-label="表單分節導覽">
+          <div class="progress-heading"><span>填寫進度</span><span id="progress-count">0／0</span></div>
+          <progress id="form-progress" max="1" value="0" aria-label="已填寫欄位進度"></progress>
+          <nav id="section-nav" aria-label="跳至訪談分節"></nav>
+        </aside>
+        <div id="form-content" tabindex="-1">
+          <form id="interview-form" novalidate></form>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="page-footer"><span>內容僅儲存在此瀏覽器</span><a href="guide.html">使用說明</a></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <div id="print-view" aria-hidden="true"></div>
+  <dialog id="name-dialog" aria-labelledby="name-dialog-title">
+    <form id="name-dialog-form">
+      <h2 id="name-dialog-title">草稿名稱</h2>
+      <label for="draft-name">名稱</label>
+      <input id="draft-name" type="text" maxlength="100" autocomplete="off" required>
+      <div class="dialog-actions"><button id="name-cancel" type="button" class="button">取消</button><button type="submit" class="button button-primary">儲存名稱</button></div>
+    </form>
+  </dialog>
+  <noscript><p class="notice notice-error">此填寫工具需要啟用 JavaScript。所有運算在瀏覽器內執行，內容不會上傳。</p></noscript>
+</body>
+</html>

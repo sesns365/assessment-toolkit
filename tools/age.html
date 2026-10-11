@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; media-src blob: data:; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'">
+  <meta name="referrer" content="no-referrer">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>實際年齡計算</title>
+    <link rel="stylesheet" href="vendor/age.css">
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', system-ui, sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        
+        /* 自定義平滑顯示動畫 */
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 隱藏數字輸入框的上下箭頭 */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+<style id="hub-tool-style">
+.hub-tool-nav{box-sizing:border-box!important;position:relative;z-index:100;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%;padding:12px 24px;background:#f8faf7;color:#334b47;border-bottom:1px solid #dbe4df;font:14px/1.6 "Microsoft JhengHei",system-ui,sans-serif;}
+.hub-tool-nav a{color:#185e52;text-decoration:none;font-weight:700}.hub-tool-nav a:hover{text-decoration:underline}.hub-tool-nav button{font:inherit;color:#52655f;border:1px solid #cdd9d2;background:#fff;padding:6px 12px;border-radius:8px;cursor:pointer}.hub-tool-nav a:focus-visible,.hub-tool-nav button:focus-visible{outline:3px solid #c49a51;outline-offset:3px}.hub-tool-nav small{font-size:12px}.hub-tool-nav .hub-tool-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.hub-tool-nav .hub-local-note{max-width:680px}
+@media(max-width:600px){.hub-tool-nav{padding:10px 16px}.hub-tool-nav small{font-size:11px}.hub-tool-nav .hub-local-note{display:block;flex-basis:100%}}
+@media print{.hub-tool-nav{display:none!important}}
+</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 py-10 px-4 sm:px-6 lg:px-8 flex justify-center items-center flex-col pt-0">
+<nav class="hub-tool-nav" aria-label="工具導覽"><a href="../index.html">← 鑑定評估工具集</a><small class="hub-local-note">日期只在目前頁面計算，離開後不保留。</small><div class="hub-tool-actions"></div></nav>
+
+    <style>body{padding:0 0 40px!important;justify-content:flex-start!important}.max-w-md{margin:36px auto 0;width:calc(100% - 32px)} .hub-tool-nav{margin-bottom:0}</style>
+    <!-- 主卡片容器 -->
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        
+        <!-- 頂部裝飾條與標題 -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5">
+            <h1 class="text-2xl font-bold text-white text-center tracking-wide">
+                <svg class="w-6 h-6 inline-block mr-2 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                精準年齡計算
+            </h1>
+        </div>
+
+        <div class="p-6 sm:p-8 space-y-7">
+            
+            <!-- 紀年選擇 (美化版按鈕式單選) -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">請選擇紀年方式</label>
+                <div class="flex rounded-lg shadow-sm border border-gray-200 p-1 bg-gray-50">
+                    <label class="flex-1 text-center cursor-pointer relative">
+                        <input type="radio" name="yearType" value="CE" class="peer sr-only" checked>
+                        <div class="py-2 text-sm font-medium text-gray-600 rounded-md transition-all duration-200 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm">
+                            西元 (A.D.)
+                        </div>
+                    </label>
+                    <label class="flex-1 text-center cursor-pointer relative ml-1">
+                        <input type="radio" name="yearType" value="ROC" class="peer sr-only">
+                        <div class="py-2 text-sm font-medium text-gray-600 rounded-md transition-all duration-200 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm">
+                            民國 (R.O.C.)
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <!-- 出生年月日輸入 -->
+            <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100/50">
+                <div class="flex items-center mb-3">
+                    <div class="bg-indigo-100 p-1.5 rounded-md mr-2">
+                        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z"></path></svg>
+                    </div>
+                    <label class="block text-sm font-semibold text-gray-800">出生日期 / 起始日</label>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="relative group">
+                        <input type="number" id="year" placeholder="年 (YYYY)" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow shadow-sm hover:border-gray-400" required>
+                    </div>
+                    <div class="relative group">
+                        <input type="number" id="month" min="1" max="12" placeholder="月 (MM)" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow shadow-sm hover:border-gray-400" required>
+                    </div>
+                    <div class="relative group">
+                        <input type="number" id="day" min="1" max="31" placeholder="日 (DD)" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow shadow-sm hover:border-gray-400" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 基準日輸入 -->
+            <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center">
+                        <div class="bg-blue-100 p-1.5 rounded-md mr-2">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <label class="block text-sm font-semibold text-gray-800">計算基準日 / 結束日</label>
+                    </div>
+                    <button id="setTodayBtn" type="button" class="text-xs text-blue-700 bg-white border border-blue-200 hover:bg-blue-50 hover:border-blue-300 px-3 py-1.5 rounded-md transition-colors focus:outline-none font-medium flex items-center shadow-sm">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        設為今天
+                    </button>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="relative">
+                        <input type="number" id="target-year" placeholder="年 (YYYY)" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow shadow-sm hover:border-gray-400" required>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="target-month" min="1" max="12" placeholder="月 (MM)" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow shadow-sm hover:border-gray-400" required>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="target-day" min="1" max="31" placeholder="日 (DD)" class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow shadow-sm hover:border-gray-400" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 錯誤訊息顯示區 -->
+            <div id="error-message" class="hidden flex items-center p-3 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert">
+                <svg class="flex-shrink-0 inline w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM10 15a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-4a1 1 0 0 1-2 0V6a1 1 0 0 1 2 0v5Z"/>
+                </svg>
+                <span id="error-text" class="font-medium"></span>
+            </div>
+
+            <!-- 計算按鈕 -->
+            <button id="calculateBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 mt-4 flex justify-center items-center">
+                開始計算
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+
+        <!-- 結果顯示區 -->
+        <div id="result-container" class="hidden fade-in border-t border-gray-100 bg-gray-50">
+            <div class="p-6 sm:p-8">
+                <div class="text-center mb-6">
+                    <span class="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full border border-green-200 mb-2">計算完成</span>
+                    <p class="text-sm text-gray-500">以 <span id="today-date-display" class="font-medium text-gray-700 border-b border-gray-300 pb-0.5"></span> 為基準</p>
+                </div>
+                
+                <div class="flex justify-center items-end space-x-4 sm:space-x-6 text-gray-800 mb-6">
+                    <div class="text-center">
+                        <div class="text-4xl sm:text-5xl font-extrabold text-indigo-600 mb-1 drop-shadow-sm" id="result-years">0</div>
+                        <div class="text-sm font-medium text-gray-500 tracking-wider">歲 (年)</div>
+                    </div>
+                    <div class="text-2xl font-light text-gray-300 pb-1">/</div>
+                    <div class="text-center">
+                        <div class="text-4xl sm:text-5xl font-extrabold text-blue-600 mb-1 drop-shadow-sm" id="result-months">0</div>
+                        <div class="text-sm font-medium text-gray-500 tracking-wider">個月</div>
+                    </div>
+                    <div class="text-2xl font-light text-gray-300 pb-1">/</div>
+                    <div class="text-center">
+                        <div class="text-4xl sm:text-5xl font-extrabold text-sky-500 mb-1 drop-shadow-sm" id="result-days">0</div>
+                        <div class="text-sm font-medium text-gray-500 tracking-wider">天</div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg p-3 text-center shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-600">這段期間總共相距了 <span id="total-days-info" class="font-bold text-gray-800 mx-1">0</span> 天</p>
+                </div>
+                <p class="text-xs text-gray-500 text-center mt-4">計算採實際曆月；若該月沒有同一天，以月底計。正式評估請依所用測驗手冊規定核對。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const yearInput = document.getElementById('year');
+            const monthInput = document.getElementById('month');
+            const dayInput = document.getElementById('day');
+            const targetYearInput = document.getElementById('target-year');
+            const targetMonthInput = document.getElementById('target-month');
+            const targetDayInput = document.getElementById('target-day');
+            const setTodayBtn = document.getElementById('setTodayBtn');
+            const calcBtn = document.getElementById('calculateBtn');
+            const resultContainer = document.getElementById('result-container');
+            const errorMsg = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const todayDisplay = document.getElementById('today-date-display');
+            
+            let currentYearType = 'CE';
+
+            // 輔助函式：設定目標日期為今天
+            function setTargetToToday() {
+                const today = new Date();
+                let y = today.getFullYear();
+                if (currentYearType === 'ROC') {
+                    y -= 1911;
+                }
+                targetYearInput.value = y;
+                targetMonthInput.value = today.getMonth() + 1;
+                targetDayInput.value = today.getDate();
+                
+                // 加入小動畫提示使用者
+                const icon = setTodayBtn.querySelector('svg');
+                icon.classList.add('animate-spin');
+                setTimeout(() => icon.classList.remove('animate-spin'), 500);
+            }
+
+            // 初始化時設定基準日為今天
+            setTargetToToday();
+            setTodayBtn.addEventListener('click', setTargetToToday);
+
+            const yearTypeRadios = document.getElementsByName('yearType');
+            yearTypeRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const newType = e.target.value;
+                    if (newType !== currentYearType) {
+                        // 轉換出生年
+                        if (yearInput.value) {
+                            let y = parseInt(yearInput.value);
+                            yearInput.value = newType === 'ROC' ? y - 1911 : y + 1911;
+                        }
+                        // 轉換基準年
+                        if (targetYearInput.value) {
+                            let y = parseInt(targetYearInput.value);
+                            targetYearInput.value = newType === 'ROC' ? y - 1911 : y + 1911;
+                        }
+                        currentYearType = newType;
+                        // 更新 placeholder 提示
+                        yearInput.placeholder = newType === 'ROC' ? '民國年 (如: 80)' : '西元年 (如: 1991)';
+                        targetYearInput.placeholder = newType === 'ROC' ? '民國年' : '西元年';
+                    }
+                });
+            });
+
+            function showError(message) {
+                errorText.textContent = message;
+                errorMsg.classList.remove('hidden');
+                resultContainer.classList.add('hidden');
+                
+                // 震動動畫提示錯誤
+                const card = document.querySelector('.max-w-md');
+                card.animate([
+                    { transform: 'translateX(0px)' },
+                    { transform: 'translateX(-5px)' },
+                    { transform: 'translateX(5px)' },
+                    { transform: 'translateX(-3px)' },
+                    { transform: 'translateX(3px)' },
+                    { transform: 'translateX(0px)' }
+                ], { duration: 400, easing: 'ease-in-out' });
+            }
+
+            function hideError() {
+                errorMsg.classList.add('hidden');
+            }
+
+            function calculateAge() {
+                hideError();
+
+                let inputYear = parseInt(yearInput.value);
+                const inputMonth = parseInt(monthInput.value);
+                const inputDay = parseInt(dayInput.value);
+                
+                let tYear = parseInt(targetYearInput.value);
+                const tMonth = parseInt(targetMonthInput.value);
+                const tDay = parseInt(targetDayInput.value);
+
+                const yearType = document.querySelector('input[name="yearType"]:checked').value;
+
+                // 驗證輸入是否完整
+                if (isNaN(inputYear) || isNaN(inputMonth) || isNaN(inputDay) || 
+                    isNaN(tYear) || isNaN(tMonth) || isNaN(tDay)) {
+                    showError('請完整填寫所有日期欄位喔！');
+                    return;
+                }
+
+                let ceInputYear = inputYear;
+                let ceTargetYear = tYear;
+
+                // 處理民國轉西元
+                if (yearType === 'ROC') {
+                    if (inputYear < 1 || tYear < 1) {
+                        showError('民國年份請輸入大於或等於 1 的整數。');
+                        return;
+                    }
+                    ceInputYear += 1911;
+                    ceTargetYear += 1911;
+                }
+
+                if (ceInputYear < 100 || ceTargetYear < 100 || ceInputYear > 9999 || ceTargetYear > 9999 || !inputs.every(input => Number.isInteger(Number(input.value)))) {
+                    showError('請輸入有效的整數日期（西元 100 至 9999 年）。');
+                    return;
+                }
+
+                // 基本日期範圍驗證 (月份)
+                if (inputMonth < 1 || inputMonth > 12 || tMonth < 1 || tMonth > 12) {
+                    showError('月份格式不對，必須在 1 到 12 之間。');
+                    return;
+                }
+                
+                // 驗證該月天數是否合理 (包含閏年判斷)
+                const birthDaysInMonth = new Date(ceInputYear, inputMonth, 0).getDate();
+                if (inputDay < 1 || inputDay > birthDaysInMonth) {
+                    showError(`起始日期錯誤，${inputYear}年${inputMonth}月只有 ${birthDaysInMonth} 天喔。`);
+                    return;
+                }
+                
+                const targetDaysInMonth = new Date(ceTargetYear, tMonth, 0).getDate();
+                if (tDay < 1 || tDay > targetDaysInMonth) {
+                    showError(`結束日期錯誤，${tYear}年${tMonth}月只有 ${targetDaysInMonth} 天喔。`);
+                    return;
+                }
+
+                const birthDate = new Date(ceInputYear, inputMonth - 1, inputDay);
+                const targetDate = new Date(ceTargetYear, tMonth - 1, tDay);
+                
+                // 檢查起始日期是否大於結束日期
+                if (birthDate > targetDate) {
+                    showError('起始日期(出生) 不能晚於 結束日期(基準日) 喔！');
+                    return;
+                }
+
+                // 以實際曆月計算；月底不存在同一天時，以該月最後一天為周年日。
+                const atMonth = (count) => {
+                    const first = new Date(ceInputYear, inputMonth - 1 + count, 1);
+                    const end = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+                    return new Date(first.getFullYear(), first.getMonth(), Math.min(inputDay, end));
+                };
+                let completeMonths = (ceTargetYear - ceInputYear) * 12 + tMonth - inputMonth;
+                if (atMonth(completeMonths) > targetDate) completeMonths--;
+                const anniversary = atMonth(completeMonths);
+                const years = Math.floor(completeMonths / 12);
+                const months = completeMonths % 12;
+                const days = Math.round((Date.UTC(ceTargetYear, tMonth - 1, tDay) - Date.UTC(anniversary.getFullYear(), anniversary.getMonth(), anniversary.getDate())) / 86400000);
+
+                // 計算總天數 (相距天數)，使用 UTC 避免日光節約時間干擾
+                const utcBirth = Date.UTC(ceInputYear, inputMonth - 1, inputDay);
+                const utcTarget = Date.UTC(ceTargetYear, tMonth - 1, tDay);
+                const timeDiff = utcTarget - utcBirth;
+                const totalDays = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+                // 顯示基準日文字
+                const displayType = yearType === 'ROC' ? '民國' : '西元';
+                todayDisplay.textContent = `${displayType} ${tYear}年 ${tMonth}月 ${tDay}日`;
+
+                // 更新數字
+                document.getElementById('result-years').textContent = years;
+                document.getElementById('result-months').textContent = months;
+                document.getElementById('result-days').textContent = days;
+                document.getElementById('total-days-info').textContent = totalDays.toLocaleString();
+
+                // 顯示結果區塊 (觸發 CSS 動畫)
+                resultContainer.classList.remove('hidden');
+                // 重置動畫，確保每次點擊都重新播放
+                resultContainer.classList.remove('fade-in');
+                void resultContainer.offsetWidth; // trigger reflow
+                resultContainer.classList.add('fade-in');
+            }
+
+            // 綁定按鈕事件
+            calcBtn.addEventListener('click', calculateAge);
+
+            // 支援在所有輸入框按下 Enter 鍵直接計算
+            const inputs = [yearInput, monthInput, dayInput, targetYearInput, targetMonthInput, targetDayInput];
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        // 移除焦點以關閉手機鍵盤
+                        this.blur();
+                        calculateAge();
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
