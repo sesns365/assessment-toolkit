@@ -50,7 +50,7 @@
   }
   function validateBackup(data, expectedKey, definition) {
     if (!isRecord(data) || data.format !== BACKUP_FORMAT || data.version !== 1) throw new Error('這不是本工具支援的 JSON 備份檔。');
-    if (data.formKey !== expectedKey) throw new Error('這是另一種訪談紀錄表的備份。請先返回工具集，開啟對應的表單再讀回。');
+    if (data.formKey !== expectedKey) throw new Error('這是另一種訪談紀錄表的備份。請先返回小工具箱，開啟對應的表單再讀回。');
     if (!isRecord(data.draft)) throw new Error('備份缺少草稿內容。');
     return { name:cleanName(data.draft.name), answers:validateAnswers(data.draft.answers, definition) };
   }
@@ -439,11 +439,11 @@
   function init() {
     try {
       formKey=new URLSearchParams(location.search).get('form')||'learning';
-      if(!['learning','emotional'].includes(formKey)||!window.FORM_DEFINITIONS?.[formKey])throw new Error('找不到這份訪談紀錄表。請返回工具集，重新選擇表單。');
+      if(!['learning','emotional'].includes(formKey)||!window.FORM_DEFINITIONS?.[formKey])throw new Error('找不到這份訪談紀錄表。請返回小工具箱，重新選擇表單。');
       def=window.FORM_DEFINITIONS[formKey];fieldList=def.sections.flatMap(section=>section.fields);fieldMap=new Map(fieldList.map(field=>[field.id,field]));
       if(fieldMap.size!==fieldList.length)throw new Error('表單欄位設定有重複，無法安全載入。');
       storageKey=STORAGE_PREFIX+formKey;
-      $('page-title').textContent=def.title;$('form-description').textContent=def.description||'';document.title=def.title+'｜鑑定評估工具集';
+      $('page-title').textContent=def.title;$('form-description').textContent=def.description||'';document.title=def.title+'｜鑑定評估小工具箱';
       $('blank-template').href=def.download;$('blank-template').setAttribute('download','');
       state={schemaVersion:1,formKey,activeId:null,drafts:[]};
       try {
@@ -454,7 +454,7 @@
       buildForm();populateForm();wireEvents();
       if(!storageBlocked)setStatus(getActive().transient?'開始填寫後，會自動暫存在本機。':'已讀取本機草稿 · 上次更新 '+displayTime(getActive().updatedAt));
       $('editor').hidden=false;
-    }catch(error){$('fatal-error').textContent=error.message||'目前無法載入表單，請返回工具集重試。';$('fatal-error').hidden=false;}
+    }catch(error){$('fatal-error').textContent=error.message||'目前無法載入表單，請返回小工具箱重試。';$('fatal-error').hidden=false;}
   }
   // Exposed pure functions enable package-integrity and import-validation tests.
   window.AssessmentFormUtils=Object.freeze({validateAnswers,validateBackup,validateStore,exportText});

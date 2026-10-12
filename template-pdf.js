@@ -234,7 +234,7 @@
     const def = {
       pageSize, pageMargins, content,
       defaultStyle: {font: 'TemplateSerif', fontSize: formKey === 'emotional' ? 12 : 11, lineHeight: 1, color: '#000000'},
-      info: {title, author: '', subject: '', creator: '鑑定評估工具箱'},
+      info: {title, author: '', subject: '', creator: '鑑定評估小工具箱'},
       compress: true,
       pageBreakBefore(currentNode, followingNodesOnPage) { return currentNode.headlineLevel === 1 && followingNodesOnPage.length === 0; }
     };
