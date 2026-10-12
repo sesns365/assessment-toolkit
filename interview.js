@@ -376,6 +376,16 @@
     }
   }
   function wireEvents() {
+    const topButton = $('back-to-top');
+    const updateTopButton = () => { topButton.hidden = window.scrollY < window.innerHeight; };
+    topButton.addEventListener('click', () => {
+      $('page-title').focus({preventScroll:true});
+      window.scrollTo({top:0, behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+    });
+    window.addEventListener('scroll', updateTopButton, {passive:true});
+    window.addEventListener('resize', updateTopButton);
+    window.addEventListener('pageshow', updateTopButton);
+    updateTopButton();
     $('interview-form').addEventListener('submit',event=>event.preventDefault());
     $('interview-form').addEventListener('input',handleInput);
     $('draft-select').addEventListener('change',event=>{

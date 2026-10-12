@@ -71,6 +71,7 @@ h2{margin:0;font-size:14px;line-height:1.5;font-weight:650;letter-spacing:.1em}
 .related-list>a>span:nth-child(2){font-size:20px;color:var(--green)}
 .site-footer{display:flex;justify-content:space-between;gap:16px;padding:23px 0 38px;font-size:11px;color:var(--muted)}
 .site-footer a:hover{color:var(--green);text-decoration:underline;text-underline-offset:5px}
+.site-credit{margin:0;padding:0 0 24px;text-align:center;font-size:11px;letter-spacing:.04em;color:var(--muted)}
 .empty{text-align:center;padding:45px 0 64px;border-top:1px solid var(--line);color:var(--muted)}
 .empty p{margin:0 0 14px}
 .empty button{padding:9px 18px;background:transparent;color:var(--green);border:1px solid var(--line);border-radius:0}
