@@ -120,15 +120,35 @@
     // w:pPr/w:rPr styles the paragraph mark, not every existing text run.
     const rp = children(p, 'r').length ? base.r : mergeProps(base.r, props(child(direct, 'rPr')));
     let text = runs(p, rp);
+    if (ctx.formKey === 'autism' && text.map(t => t.text).join('').startsWith('(一)受訪者(法定代理人或實際照顧者)')) {
+      // Word suppresses the empty trailing time line on this already-full row.
+      // A filled time is regular text and is retained, including all its lines.
+      while (text.length && !text[text.length - 1].text.trim()) text.pop();
+    }
     const prefix = ctx.listPrefix(direct);
     if (prefix) text.unshift({text: prefix, ...charStyle(rp)});
     if (!text.length) text = [{text: ' ', ...charStyle(rp)}];
+    const blankText = text.map(t => t.text).join('');
+    const blankUnderline = ctx.formKey === 'autism' && blankText.length > 8 && !blankText.trim() && text.some(t => t.decoration === 'underline');
     if (!text.map(t => t.text).join('').trim()) text.forEach(t => delete t.decoration);
+    if (ctx.formKey === 'autism' && !blankUnderline) {
+      for (const run of text) {
+        if (run.decoration === 'underline' && run.text && !run.text.trim()) {
+          // pdfmake positions overflowing U+2002 space glyphs outside a line.
+          // Actual rule glyphs participate in line wrapping and stay in bounds.
+          run.text = run.text.replace(/[^\S\n]/g, '_');
+          // Only the decorative empty rule changes size; entered text keeps the
+          // source size. This matches the narrower blank advances of Kai.
+          run.fontSize = (run.fontSize || 12) * 0.86;
+          delete run.decoration;
+        }
+      }
+    }
     const fontSize = Math.max(...text.map(t => t.fontSize || 11));
     const spacing = pp.spacing || {};
     const ind = pp.ind || {};
     let linePt = spacing.lineRule === 'exact' ? Number(spacing.line || 0) / 20 : 0;
-    if (!linePt) linePt = ctx.formKey === 'emotional' ? 18 : 15;
+    if (!linePt) linePt = ctx.formKey === 'learning' ? 15 : 18;
     // PDF fonts use typographic ascent+descent; convert the template's point
     // line pitch to that metric so the original blank-form spacing is retained.
     const lineHeight = Math.max(0.55, linePt / (fontSize * FONT_METRIC_HEIGHT));
@@ -142,11 +162,19 @@
       margin: [Number(ind.left || 0) / 20, Number(spacing.before || 0) / 20, Number(ind.right || 0) / 20, Number(spacing.after || 0) / 20],
       preserveLeadingSpaces: true
     };
+    if (blankUnderline) {
+      // A blank answer rule is a graphic, not a long string of space glyphs.
+      // Keep its original line pitch and constrain it to the paper's margins.
+      const width = Math.min(ctx.availableWidth - output.margin[0] - output.margin[2],
+        text.reduce((n, run) => n + run.text.length * (run.fontSize || 12) / 2, 0));
+      return {canvas: [{type: 'line', x1: 0, y1: linePt - 2, x2: width, y2: linePt - 2, lineWidth: 0.5}],
+        margin: [output.margin[0], output.margin[1], output.margin[2], output.margin[3] + 2]};
+    }
     if (pp.pageBreakBefore && !['0', 'false'].includes(pp.pageBreakBefore.val)) output.pageBreak = 'before';
     if (pp.keepNext && !['0', 'false'].includes(pp.keepNext.val)) output.headlineLevel = 1;
     const joined = text.map(run => run.text).join('');
-    if (ctx.formKey === 'emotional' && /^家長[:：]/.test(joined) && /導師[:：]/.test(joined)) {
-      const portions = joined.match(/^家長[:：]([\s\S]*?)導師[:：]([\s\S]*)$/);
+    if (ctx.formKey === 'emotional' && p.templateResponses) {
+      const portions = ['', ...p.templateResponses.map(response => response.value)];
       if (portions) {
         const smallLabel = label => ({
           table: {widths: [29], body: [[{text: label, fontSize: 12, lineHeight: 0.85}]]},
@@ -225,6 +253,7 @@
     const pageMargins = ['left', 'top', 'right', 'bottom'].map(s => num(margins, s, 720) / 20);
     const ctx = context(formKey);
     const availableWidth = pageSize.width - pageMargins[0] - pageMargins[2];
+    ctx.availableWidth = availableWidth;
     const content = children(body).filter(n => ['p', 'tbl'].includes(local(n))).map(n => local(n) === 'p' ? paragraph(n, ctx) : table(n, ctx, availableWidth));
     const title = global.FORM_DEFINITIONS && global.FORM_DEFINITIONS[formKey] ? global.FORM_DEFINITIONS[formKey].title : '訪談紀錄表';
     // The source keeps the year in an anchored text box. A right-aligned
@@ -233,7 +262,7 @@
     const textboxText = boxes.map(n => Array.from(n.getElementsByTagNameNS(W, 't')).map(t => t.textContent).join('')).join(' ');
     const def = {
       pageSize, pageMargins, content,
-      defaultStyle: {font: 'TemplateSerif', fontSize: formKey === 'emotional' ? 12 : 11, lineHeight: 1, color: '#000000'},
+      defaultStyle: {font: 'TemplateSerif', fontSize: formKey === 'learning' ? 11 : 12, lineHeight: 1, color: '#000000'},
       info: {title, author: '', subject: '', creator: '鑑定評估小工具箱'},
       compress: true,
       pageBreakBefore(currentNode, followingNodesOnPage) { return currentNode.headlineLevel === 1 && followingNodesOnPage.length === 0; }

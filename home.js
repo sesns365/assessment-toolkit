@@ -27,7 +27,7 @@ function resetFilter() {
 }
 
 function refreshDrafts() {
-  for (const key of ['learning', 'emotional']) {
+  for (const key of ['learning', 'emotional', 'autism']) {
     let count = 0;
     let available = true;
     try {

@@ -9,7 +9,7 @@
   const cleanText = value => (Array.isArray(value) ? value.join('、') : typeof value === 'string' ? value : '')
     .replace(/\r\n?/g, '\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g, '');
   function templateFor(key) {
-    if (!['learning', 'emotional'].includes(key) || !window.TEMPLATE_DATA?.[key]) throw new Error('找不到原範本。');
+    if (!['learning', 'emotional', 'autism'].includes(key) || !window.TEMPLATE_DATA?.[key]) throw new Error('找不到原範本。');
     return window.TEMPLATE_DATA[key];
   }
   function appendText(run, value) {
@@ -61,6 +61,19 @@
       parent.removeChild(text);
     }
   }
+  function insertAnswerParagraph(anchor, source, value, plain) {
+    const p = source.cloneNode(false), properties = children(source, 'pPr')[0];
+    if (properties) {
+      const copy = properties.cloneNode(true);
+      for (const name of ['sectPr', 'numPr', 'pageBreakBefore', 'keepNext']) {
+        for (const node of children(copy, name)) copy.removeChild(node);
+      }
+      p.appendChild(copy);
+    }
+    p.appendChild(answerRun(p, value, children(source, 'r')[0], plain));
+    anchor.parentNode.insertBefore(p, anchor.nextSibling);
+    return p;
+  }
   function fillDocument(formKey, answers = {}) {
     const template = templateFor(formKey);
     const doc = new DOMParser().parseFromString(template.documentXml, 'application/xml');
@@ -70,9 +83,22 @@
     const slots = [...template.slots].sort((a, b) => a.p - b.p || (b.start || 0) - (a.start || 0));
     for (const slot of slots) {
       const value = cleanText(answers[slot.id]);
-      if (!value.trim()) continue; // Unfilled fields retain the exact blank source layout.
+      const present = Object.prototype.hasOwnProperty.call(answers, slot.id);
+      if (slot.optional ? !present : !value.trim()) continue;
       const p = paragraphs[slot.p]; if (!p) throw new Error('原範本欄位不存在。');
       if (slot.kind === 'blank') setBlank(p, value);
+      else if (['blank-paragraph', 'optional-blank-paragraph'].includes(slot.kind)) {
+        setBlank(p, (slot.prefix || '') + value);
+      } else if (slot.kind === 'optional-insert-paragraph') {
+        insertAnswerParagraph(p, paragraphs[slot.cloneP], (slot.prefix || '') + value, slot.plain);
+      } else if (slot.kind === 'blank-runs') {
+        const runs = children(p, 'r');
+        for (const index of slot.valueRunIndices) {
+          if (!runs[index]) throw new Error('原範本欄位位置不符。');
+          for (const node of elements(runs[index], 't')) node.textContent = '';
+        }
+        appendText(runs[slot.writeRunIndex], value + '  ');
+      }
       else if (slot.kind === 'range') {
         let insert = value;
         if (slot.pad) {
@@ -87,7 +113,16 @@
         p.insertBefore(answerRun(p, ' ' + value, labelRun, true), labelRun.nextSibling);
       }
     }
-    for (const p of paragraphs) expandNewlines(p);
+    // These DOM-only values distinguish source labels from identical words in
+    // a user's answer. XML serialization does not include custom JS properties.
+    if (formKey === 'emotional') {
+      for (const slot of slots.filter(s => s.kind === 'after-label')) {
+        const p = paragraphs[slot.p];
+        p.templateResponses ||= [];
+        p.templateResponses.push({label: slot.label, value: cleanText(answers[slot.id])});
+      }
+    }
+    for (const p of elements(doc, 'p')) expandNewlines(p);
     return doc;
   }
   function fillXml(formKey, answers = {}) {

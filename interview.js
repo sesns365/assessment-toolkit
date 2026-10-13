@@ -133,16 +133,46 @@
     $('draft-meta').textContent = active.transient ? '尚未建立暫存，開始填寫即可。' : '建立於 ' + displayTime(active.createdAt) + ' · 共 ' + state.drafts.filter(draft => !draft.transient).length + ' 份草稿';
   }
   function filled(value) { return Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0; }
+  function isFieldEnabled(field, answers) { return field.optional !== true || own(answers, field.id); }
   function updateProgress() {
     const answers = getActive().answers;
-    const count = fieldList.filter(field => filled(answers[field.id])).length;
-    $('progress-count').textContent = count + '／' + fieldList.length;
-    $('form-progress').max = fieldList.length || 1;
+    const enabledFields = fieldList.filter(field => isFieldEnabled(field, answers));
+    const count = enabledFields.filter(field => filled(answers[field.id])).length;
+    $('progress-count').textContent = count + '／' + enabledFields.length;
+    $('form-progress').max = enabledFields.length || 1;
     $('form-progress').value = count;
     def.sections.forEach((section, index) => {
       const item = $('section-count-' + index);
-      if (item) item.textContent = section.fields.filter(field => filled(answers[field.id])).length + '／' + section.fields.length;
+      const enabled = section.fields.filter(field => isFieldEnabled(field, answers));
+      if (item) item.textContent = enabled.filter(field => filled(answers[field.id])).length + '／' + enabled.length;
     });
+  }
+  function updateOptionalFields() {
+    const answers = getActive().answers;
+    for (const field of fieldList.filter(item => item.optional === true)) {
+      const enabled = isFieldEnabled(field, answers);
+      const wrapper = $('optional-' + field.id);
+      const addButton = $('add-' + field.id);
+      wrapper.hidden = !enabled;
+      addButton.hidden = enabled;
+      addButton.setAttribute('aria-expanded', String(enabled));
+      wrapper.querySelectorAll('[data-field]').forEach(control => { control.disabled = !enabled; });
+    }
+  }
+  function changeOptionalField(field, enabled) {
+    const draft = getActive();
+    if (field.optional !== true || enabled === isFieldEnabled(field, draft.answers)) return;
+    const value = draft.answers[field.id];
+    if (!enabled && ((typeof value === 'string' && value.length > 0) || (Array.isArray(value) && value.length > 0))) {
+      if (!window.confirm('確定移除這一題的「' + field.label + '」欄位？\n欄位中的內容會一併刪除，其他題目不受影響。')) return;
+    }
+    if (enabled) draft.answers[field.id] = '';
+    else delete draft.answers[field.id];
+    draft.updatedAt = now();
+    draft.transient = false;
+    populateForm();
+    markChanged({immediate:true});
+    $(enabled ? 'input-' + field.id : 'add-' + field.id)?.focus();
   }
   function appendText(parent, tag, className, text) {
     const element = document.createElement(tag);
@@ -181,16 +211,39 @@
       if (section.description) appendText(block, 'p', 'section-description', section.description);
       for (const field of section.fields) {
         const wrapper = document.createElement('div');
-        wrapper.className = 'field';
+        wrapper.className = 'field' + (field.optional === true ? ' optional-field' : '');
         const inputId = 'input-' + field.id;
+        if (field.optional === true) {
+          wrapper.id = 'optional-' + field.id;
+          wrapper.hidden = !isFieldEnabled(field, getActive().answers);
+          const addButton = appendText(block, 'button', 'button optional-add', '＋ 新增' + field.label);
+          addButton.type = 'button';
+          addButton.id = 'add-' + field.id;
+          addButton.dataset.optionalAdd = field.id;
+          addButton.setAttribute('aria-controls', wrapper.id);
+          addButton.addEventListener('click', () => changeOptionalField(field, true));
+        }
         let container = wrapper;
         if (field.type === 'checkboxes') {
           container = document.createElement('fieldset');
           wrapper.append(container);
           appendText(container, 'legend', '', field.label);
         } else {
-          const label = appendText(container, 'label', '', field.label);
+          let labelContainer = container;
+          if (field.optional === true) {
+            labelContainer = document.createElement('div');
+            labelContainer.className = 'optional-field-heading';
+            container.append(labelContainer);
+          }
+          const label = appendText(labelContainer, 'label', '', field.label);
           label.htmlFor = inputId;
+          if (field.optional === true) {
+            const removeButton = appendText(labelContainer, 'button', 'button optional-remove', '移除');
+            removeButton.type = 'button';
+            removeButton.dataset.optionalRemove = field.id;
+            removeButton.setAttribute('aria-label', '移除此題的' + field.label + '欄位');
+            removeButton.addEventListener('click', () => changeOptionalField(field, false));
+          }
         }
         if (field.hint) {
           const hint = appendText(container, 'p', 'field-hint', field.hint);
@@ -246,7 +299,7 @@
       if (control.type === 'checkbox') control.checked = Array.isArray(value) && value.includes(control.value);
       else control.value = typeof value === 'string' ? value : '';
     }
-    renderDrafts(); updateProgress();
+    updateOptionalFields(); renderDrafts(); updateProgress();
   }
   function handleInput(event) {
     const control = event.target;
@@ -254,6 +307,7 @@
     const field = fieldMap.get(control.dataset.field);
     if (!field) return;
     const active = getActive();
+    if (!isFieldEnabled(field, active.answers)) return;
     if (field.type === 'checkboxes') {
       active.answers[field.id] = Array.from($('interview-form').querySelectorAll('input[type="checkbox"]')).filter(input => input.dataset.field === field.id && input.checked).map(input => input.value);
     } else active.answers[field.id] = control.value;
@@ -289,6 +343,7 @@
       lines.push(section.title, '─'.repeat(28));
       if (section.description) lines.push(section.description, '');
       for (const field of section.fields) {
+        if (!isFieldEnabled(field, draft.answers)) continue;
         lines.push(field.label);
         if (field.hint) lines.push('填寫提示：' + field.hint);
         lines.push(answerText(field, draft.answers), '');
@@ -439,7 +494,7 @@
   function init() {
     try {
       formKey=new URLSearchParams(location.search).get('form')||'learning';
-      if(!['learning','emotional'].includes(formKey)||!window.FORM_DEFINITIONS?.[formKey])throw new Error('找不到這份訪談紀錄表。請返回小工具箱，重新選擇表單。');
+      if(!['learning','emotional','autism'].includes(formKey)||!window.FORM_DEFINITIONS?.[formKey])throw new Error('找不到這份訪談紀錄表。請返回小工具箱，重新選擇表單。');
       def=window.FORM_DEFINITIONS[formKey];fieldList=def.sections.flatMap(section=>section.fields);fieldMap=new Map(fieldList.map(field=>[field.id,field]));
       if(fieldMap.size!==fieldList.length)throw new Error('表單欄位設定有重複，無法安全載入。');
       storageKey=STORAGE_PREFIX+formKey;
@@ -457,6 +512,6 @@
     }catch(error){$('fatal-error').textContent=error.message||'目前無法載入表單，請返回小工具箱重試。';$('fatal-error').hidden=false;}
   }
   // Exposed pure functions enable package-integrity and import-validation tests.
-  window.AssessmentFormUtils=Object.freeze({validateAnswers,validateBackup,validateStore,exportText});
+  window.AssessmentFormUtils=Object.freeze({validateAnswers,validateBackup,validateStore,exportText,isFieldEnabled});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

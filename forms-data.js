@@ -511,6 +511,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-1-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-1-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -528,6 +534,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-2-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-2-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -545,6 +557,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-3-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-3-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -562,6 +580,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-4-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-4-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -579,6 +603,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-5-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-5-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -596,6 +626,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-6-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-6-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -613,6 +649,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-7-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-7-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -630,6 +672,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-8-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-8-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -647,6 +695,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-9-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-9-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -664,6 +718,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-10-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-10-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -681,6 +741,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-11-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-11-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -698,6 +764,12 @@ window.FORM_DEFINITIONS = {
             "id": "interview-12-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-12-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
@@ -715,6 +787,432 @@ window.FORM_DEFINITIONS = {
             "id": "interview-13-teacher",
             "label": "導師",
             "type": "textarea"
+          },
+          {
+            "id": "interview-13-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "student-interview",
+        "title": "十四、訪談學生",
+        "description": "",
+        "fields": [
+          {
+            "id": "student-1",
+            "label": "1.學生自我介紹：",
+            "type": "textarea"
+          },
+          {
+            "id": "student-2",
+            "label": "2.學生說明家庭成員及其關係：",
+            "type": "textarea"
+          },
+          {
+            "id": "student-3",
+            "label": "3.學生說明與同儕關係：",
+            "type": "textarea"
+          },
+          {
+            "id": "student-4",
+            "label": "4.學生說明與師長關係：",
+            "type": "textarea"
+          },
+          {
+            "id": "student-5",
+            "label": "5.學生說明學校生活及學習情形：",
+            "type": "textarea"
+          }
+        ]
+      },
+      {
+        "id": "other-notes",
+        "title": "十五、其他",
+        "description": "",
+        "fields": [
+          {
+            "id": "other-notes-1",
+            "label": "其他紀錄",
+            "type": "textarea"
+          }
+        ]
+      }
+    ]
+  },
+  "autism": {
+    "title": "115學年度版嘉義縣自閉症學生訪談紀錄表",
+    "description": "115 學年度版。本表由鑑定評估人員填寫，視需求自行增減表格，受訪者須簽名。",
+    "download": "downloads/autism.docx",
+    "sections": [
+      {
+        "id": "basic",
+        "title": "基本資料",
+        "description": "115 學年度版。本表由鑑定評估人員填寫，視需求自行增減表格，受訪者須簽名。",
+        "fields": [
+          {
+            "id": "school",
+            "label": "學校",
+            "type": "text"
+          },
+          {
+            "id": "student",
+            "label": "學生姓名",
+            "type": "text"
+          },
+          {
+            "id": "interviewer",
+            "label": "晤談者（鑑定評估人員）",
+            "type": "text"
+          },
+          {
+            "id": "guardian-name",
+            "label": "（一）受訪者（法定代理人或實際照顧者）",
+            "type": "text"
+          },
+          {
+            "id": "guardian-relationship",
+            "label": "（一）受訪者（法定代理人或實際照顧者）－關係",
+            "type": "text"
+          },
+          {
+            "id": "guardian-time",
+            "label": "（一）受訪者（法定代理人或實際照顧者）－晤談時間",
+            "type": "text",
+            "hint": "可填寫日期與時間。"
+          },
+          {
+            "id": "teacher-name",
+            "label": "（二）受訪者（班級導師）",
+            "type": "text"
+          },
+          {
+            "id": "teacher-relationship",
+            "label": "（二）受訪者（班級導師）－關係",
+            "type": "text"
+          },
+          {
+            "id": "teacher-time",
+            "label": "（二）受訪者（班級導師）－晤談時間",
+            "type": "text",
+            "hint": "可填寫日期與時間。"
+          },
+          {
+            "id": "other-name",
+            "label": "（三）受訪者（相關人員）",
+            "type": "text"
+          },
+          {
+            "id": "other-relationship",
+            "label": "（三）受訪者（相關人員）－關係",
+            "type": "text"
+          },
+          {
+            "id": "other-time",
+            "label": "（三）受訪者（相關人員）－晤談時間",
+            "type": "text",
+            "hint": "可填寫日期與時間。"
+          }
+        ]
+      },
+      {
+        "id": "interview-1",
+        "title": "一、就醫過程(新個案必填)",
+        "description": "1.何時就醫？持續就醫時間？最近一次就醫時間&狀況？\n2.醫生是否建議用藥？劑量？用藥成效？如果尚未用藥，未用藥原因？藥物如何影響學生的行為?\n3.是否接受相關治療？治療頻率？持續時間？治療方式？成效如何？\n4.任何可能會影響學生行為問題的疾病或生理狀況(包括: 氣喘、過敏、癲癇、和生理期的問題…)",
+        "fields": [
+          {
+            "id": "interview-1-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-1-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-1-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-2",
+        "title": "二、早期療育過程(新個案必填)",
+        "description": "接受早期療育之狀況？何時？接受何種項目？持續時間？頻率？效果如何？",
+        "fields": [
+          {
+            "id": "interview-2-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-2-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-2-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-3",
+        "title": "三、第一次發現孩子有異狀(新個案必填)",
+        "description": "第一次發現孩子與其他孩子不一樣的時間？不一樣在哪些方面(語言發展遲緩、缺乏人際互動、行為問題、動作發展不佳、視聽覺異常等)？是誰發現的？當時採取什麼處理？主要照顧者是誰？",
+        "fields": [
+          {
+            "id": "interview-3-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-3-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-3-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-4",
+        "title": "四、孩子社會性互動方面─非口語行為",
+        "description": "1.孩子與人目光接觸的狀況？是否會避開別人的眼睛，或有不當的視線接觸（如，直盯著人看）？\n2.與人身體接觸的接受程度如何？是否會避開接觸或有不當的接觸？\n3.情緒表情反應如何？是否曾有不適當的哭笑等情緒反應？說話時表情呆滯，少有變化？\n以上發生頻率、狀況、舉例說明。",
+        "fields": [
+          {
+            "id": "interview-4-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-4-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-4-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-5",
+        "title": "五、孩子社會性互動方面─同儕關係",
+        "description": "孩子在同儕關係如何？在同儕團體中表現得過於主動、被動、或畏縮？是否適當？（如，有無不懂得和人相處，不瞭解規定，有不符合情境的互動行為）舉例說明。",
+        "fields": [
+          {
+            "id": "interview-5-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-5-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-5-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-6",
+        "title": "六、孩子社會性互動方面─主動分享",
+        "description": "孩子的主動分享動機如何？會不會主動尋找他人分享喜悅、興趣，或活動的行為？舉例說明。",
+        "fields": [
+          {
+            "id": "interview-6-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-6-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-6-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-7",
+        "title": "七、孩子的溝通能力─語言交談與刻板語言",
+        "description": "孩子語言交談狀況？無法主動開始對話？無法正確使用代名詞？與人聊天常變換話題或脫離主題？常發出別人聽不懂的語音，或聽得懂但無法辨識意義的語言？說重複的話 (如，仿說、一直說同樣的話) ？",
+        "fields": [
+          {
+            "id": "interview-7-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-7-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-7-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-8",
+        "title": "八、孩子的溝通能力─假扮性遊戲（學前或國小階段適用）",
+        "description": "玩的時候不會模仿別人？玩的時候玩法沒有變化？不會玩假裝性或角色扮演的遊戲？舉例說明。",
+        "fields": [
+          {
+            "id": "interview-8-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-8-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-8-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-9",
+        "title": "九、孩子的行為、興趣與活動─特殊興趣？",
+        "description": "盯著物體或環境中其他東西至少5秒鐘？喜歡看轉動或閃爍的東西？對感興趣的事物會不斷重複地說或做？過分沉迷地蒐集或操弄某些物品（如廣告紙、時刻表等）？身上攜帶某樣東西，不肯輕易離身？舉例說明。",
+        "fields": [
+          {
+            "id": "interview-9-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-9-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-9-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-10",
+        "title": "十、孩子的行為、興趣與活動─儀式行為？",
+        "description": "日常生活習慣或常規改變時會生氣（如，用餐、放學時間；活動、座位等改變）？對事情的程序或步驟異常堅持？舉例說明。",
+        "fields": [
+          {
+            "id": "interview-10-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-10-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-10-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-11",
+        "title": "十一、家族病史",
+        "description": "家族是否有其他身心障礙人士？障礙類別為何？與孩子的關係？",
+        "fields": [
+          {
+            "id": "interview-11-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-11-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-11-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-12",
+        "title": "十二、孩子曾經接受過之一般輔導措施？",
+        "description": "接受過認輔制度或輔導老師的狀況？社會公益團體或民間協會的輔導？學校申請之醫療體系的治療(心理諮商師)？次數？輔導方式？輔導期間？成效如何？進步的地方？",
+        "fields": [
+          {
+            "id": "interview-12-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-12-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-12-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "interview-13",
+        "title": "十三、孩子目前接受特教服務情況",
+        "description": "接受特教服務的狀況？孩子是否曾經入資源班？期間有多久？課程頻率？特教老師協助的方式？\n孩子接受特教服務後的情況？進步的地方？在普通班的影響？進入下一個教育階段，是否覺得有必要特教老師持續協助？為什麼？若是該項服務已終止，請說明當時終止的原因？",
+        "fields": [
+          {
+            "id": "interview-13-guardian",
+            "label": "家長",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-13-teacher",
+            "label": "導師",
+            "type": "textarea"
+          },
+          {
+            "id": "interview-13-related",
+            "label": "相關人員",
+            "type": "textarea",
+            "optional": true
           }
         ]
       },
