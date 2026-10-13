@@ -85,8 +85,20 @@ progress::-moz-progress-bar{background:var(--green);border-radius:3px}
 .field fieldset{border:0;padding:0;margin:0;min-width:0}
 .field legend{padding:0}
 .field-hint{font-size:12px;color:var(--muted);margin:-3px 0 10px;white-space:pre-line}
-input[type=text],input[type=date],select,textarea{width:100%;border:1px solid #d5d9cf;background:#fff;color:var(--ink);border-radius:3px;padding:11px 12px;font-size:15px;line-height:1.65;transition:border-color .15s,box-shadow .15s}
-input[type=text]:focus,input[type=date]:focus,select:focus,textarea:focus{outline:0;border-color:#799a84;box-shadow:0 0 0 3px #edf2eb}
+.respondent-row{border:0;padding:0;margin:28px 0;min-width:0}
+.respondent-row:last-child{margin-bottom:0}
+.respondent-row>legend{padding:0;margin-bottom:12px;font-size:14px;font-weight:600;line-height:1.75}
+.respondent-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) minmax(0,1.15fr) minmax(0,.85fr);gap:14px;align-items:start}
+.respondent-grid>.field{margin:0;min-width:0}
+.respondent-grid>.date-time-field{grid-column:span 2}
+.date-time-pickers{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:14px}
+.date-time-cell,.date-time-legacy{min-width:0}
+.date-time-cell>label,.date-time-legacy>label{display:block;font-size:14px;font-weight:600;line-height:1.75;margin-bottom:9px}
+.date-time-pickers:not([hidden])+.date-time-legacy:not([hidden]){margin-top:12px}
+.button.date-time-switch{padding:6px 0;border:0;background:transparent;font-size:12px;font-weight:400;color:var(--muted)}
+.button.date-time-switch:hover{color:var(--green);text-decoration:underline;text-underline-offset:4px}
+input[type=text],input[type=date],input[type=time],select,textarea{width:100%;min-width:0;border:1px solid #d5d9cf;background:#fff;color:var(--ink);border-radius:3px;padding:11px 12px;font-size:15px;line-height:1.65;transition:border-color .15s,box-shadow .15s}
+input[type=text]:focus,input[type=date]:focus,input[type=time]:focus,select:focus,textarea:focus{outline:0;border-color:#799a84;box-shadow:0 0 0 3px #edf2eb}
 textarea{display:block;resize:vertical;min-height:130px}
 input[type=date]{max-width:280px}
 .checkbox-list{display:flex;flex-wrap:wrap;gap:9px 18px;padding:8px 0}
@@ -165,12 +177,15 @@ h1{font-size:25px}
 .section-heading h2{font-size:18px}
 .field>label,.field legend{font-size:14px}
 .field{margin-bottom:22px}
-input[type=text],input[type=date],select,textarea{font-size:16px}
+input[type=text],input[type=date],input[type=time],select,textarea{font-size:16px}
 textarea{min-height:140px}
 .toast{font-size:12px}
 .back-to-top{right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));font-size:13px}
 .page-footer{font-size:11px}
 }
+
+@media(max-width:960px){.respondent-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.respondent-grid,.date-time-pickers{grid-template-columns:minmax(0,1fr)}.respondent-grid>.date-time-field{grid-column:span 1}}
 
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}
 *{transition:none!important}

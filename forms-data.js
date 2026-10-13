@@ -450,50 +450,88 @@ window.FORM_DEFINITIONS = {
           {
             "id": "guardian-name",
             "label": "（一）受訪者（法定代理人或實際照顧者）",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "姓名"
           },
           {
             "id": "guardian-relationship",
             "label": "（一）受訪者（法定代理人或實際照顧者）－關係",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "關係"
           },
           {
             "id": "guardian-time",
             "label": "（一）受訪者（法定代理人或實際照顧者）－晤談時間",
-            "type": "text",
-            "hint": "可填寫日期與時間。"
+            "type": "date-time",
+            "displayLabel": "晤談時間"
           },
           {
             "id": "teacher-name",
             "label": "（二）受訪者（班級導師）",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "姓名"
           },
           {
             "id": "teacher-relationship",
             "label": "（二）受訪者（班級導師）－關係",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "關係"
           },
           {
             "id": "teacher-time",
             "label": "（二）受訪者（班級導師）－晤談時間",
-            "type": "text",
-            "hint": "可填寫日期與時間。"
+            "type": "date-time",
+            "displayLabel": "晤談時間"
           },
           {
             "id": "other-name",
             "label": "（三）受訪者（相關人員）",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "姓名"
           },
           {
             "id": "other-relationship",
             "label": "（三）受訪者（相關人員）－關係",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "關係"
           },
           {
             "id": "other-time",
             "label": "（三）受訪者（相關人員）－晤談時間",
-            "type": "text",
-            "hint": "可填寫日期與時間。"
+            "type": "date-time",
+            "displayLabel": "晤談時間"
+          }
+        ],
+        "respondentRows": [
+          {
+            "id": "guardian",
+            "title": "（一）受訪者（法定代理人或實際照顧者）",
+            "labelPrefix": "法定代理人或實際照顧者",
+            "fields": [
+              "guardian-name",
+              "guardian-relationship",
+              "guardian-time"
+            ]
+          },
+          {
+            "id": "teacher",
+            "title": "（二）受訪者（班級導師）",
+            "labelPrefix": "班級導師",
+            "fields": [
+              "teacher-name",
+              "teacher-relationship",
+              "teacher-time"
+            ]
+          },
+          {
+            "id": "other",
+            "title": "（三）受訪者（相關人員）",
+            "labelPrefix": "相關人員",
+            "fields": [
+              "other-name",
+              "other-relationship",
+              "other-time"
+            ]
           }
         ]
       },
@@ -870,50 +908,88 @@ window.FORM_DEFINITIONS = {
           {
             "id": "guardian-name",
             "label": "（一）受訪者（法定代理人或實際照顧者）",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "姓名"
           },
           {
             "id": "guardian-relationship",
             "label": "（一）受訪者（法定代理人或實際照顧者）－關係",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "關係"
           },
           {
             "id": "guardian-time",
             "label": "（一）受訪者（法定代理人或實際照顧者）－晤談時間",
-            "type": "text",
-            "hint": "可填寫日期與時間。"
+            "type": "date-time",
+            "displayLabel": "晤談時間"
           },
           {
             "id": "teacher-name",
             "label": "（二）受訪者（班級導師）",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "姓名"
           },
           {
             "id": "teacher-relationship",
             "label": "（二）受訪者（班級導師）－關係",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "關係"
           },
           {
             "id": "teacher-time",
             "label": "（二）受訪者（班級導師）－晤談時間",
-            "type": "text",
-            "hint": "可填寫日期與時間。"
+            "type": "date-time",
+            "displayLabel": "晤談時間"
           },
           {
             "id": "other-name",
             "label": "（三）受訪者（相關人員）",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "姓名"
           },
           {
             "id": "other-relationship",
             "label": "（三）受訪者（相關人員）－關係",
-            "type": "text"
+            "type": "text",
+            "displayLabel": "關係"
           },
           {
             "id": "other-time",
             "label": "（三）受訪者（相關人員）－晤談時間",
-            "type": "text",
-            "hint": "可填寫日期與時間。"
+            "type": "date-time",
+            "displayLabel": "晤談時間"
+          }
+        ],
+        "respondentRows": [
+          {
+            "id": "guardian",
+            "title": "（一）受訪者（法定代理人或實際照顧者）",
+            "labelPrefix": "法定代理人或實際照顧者",
+            "fields": [
+              "guardian-name",
+              "guardian-relationship",
+              "guardian-time"
+            ]
+          },
+          {
+            "id": "teacher",
+            "title": "（二）受訪者（班級導師）",
+            "labelPrefix": "班級導師",
+            "fields": [
+              "teacher-name",
+              "teacher-relationship",
+              "teacher-time"
+            ]
+          },
+          {
+            "id": "other",
+            "title": "（三）受訪者（相關人員）",
+            "labelPrefix": "相關人員",
+            "fields": [
+              "other-name",
+              "other-relationship",
+              "other-time"
+            ]
           }
         ]
       },

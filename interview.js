@@ -10,6 +10,7 @@
   let saveTimer, toastTimer, nameMode = 'rename', dirty = false;
   let storageBlocked = false, storageReason = '', lastStorageRaw = null;
   let lastSavedAt = null;
+  const dateTimeModes = new Map();
   const $ = id => document.getElementById(id);
   const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
@@ -134,6 +135,92 @@
   }
   function filled(value) { return Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim().length > 0; }
   function isFieldEnabled(field, answers) { return field.optional !== true || own(answers, field.id); }
+  function parseDateTime(value) {
+    if (typeof value !== 'string') return null;
+    if (value === '') return {date:'', time:''};
+    const match = /^(?:(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}))?|(\d{2}:\d{2}))$/.exec(value.trim());
+    if (!match) return null;
+    const date = match[1] || '';
+    const time = match[2] || match[3] || '';
+    if (date) {
+      const parsed = new Date(date + 'T00:00:00Z');
+      if (date.startsWith('0000-') || !Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0,10) !== date) return null;
+    }
+    if (time && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) return null;
+    return {date, time};
+  }
+  function composeDateTime(date, time) {
+    if (date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !parseDateTime(date))) return null;
+    if (time && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) return null;
+    return [date, time].filter(Boolean).join(' ');
+  }
+  function dateTimeModeKey(field) { return getActive().id + ':' + field.id; }
+  function populateDateTimeField(field) {
+    const value = getActive().answers[field.id] || '';
+    const parsed = parseDateTime(value);
+    const mode = dateTimeModes.get(dateTimeModeKey(field));
+    const showLegacy = mode === 'legacy' || parsed === null;
+    const showPickers = mode !== 'legacy' && (parsed !== null || mode === 'pending');
+    $('datetime-legacy-' + field.id).hidden = !showLegacy;
+    $('datetime-pickers-' + field.id).hidden = !showPickers;
+    $('input-' + field.id).value = value;
+    $('input-' + field.id + '-date').value = parsed?.date || '';
+    $('input-' + field.id + '-time').value = parsed?.time || '';
+    const toggle = $('datetime-switch-' + field.id);
+    toggle.textContent = showPickers ? '保留文字填寫' : '改用日期與時間';
+    toggle.setAttribute('aria-expanded', String(showPickers));
+  }
+  function buildDateTimeField(field, wrapper, labelPrefix) {
+    wrapper.classList.add('date-time-field');
+    const pickers = document.createElement('div');
+    pickers.className = 'date-time-pickers';
+    pickers.id = 'datetime-pickers-' + field.id;
+    for (const [component, labelText] of [['date','日期'], ['time','時間']]) {
+      const cell = document.createElement('div');
+      cell.className = 'date-time-cell';
+      const id = 'input-' + field.id + '-' + component;
+      const label = appendText(cell, 'label', '', labelText);
+      label.htmlFor = id;
+      const input = document.createElement('input');
+      input.type = component;
+      input.id = id;
+      input.name = field.id + '-' + component;
+      input.dataset.field = field.id;
+      input.dataset.component = component;
+      input.autocomplete = 'off';
+      input.setAttribute('aria-label', labelPrefix + '－晤談' + labelText);
+      if (component === 'time') input.step = '60';
+      cell.append(input);
+      pickers.append(cell);
+    }
+    const legacy = document.createElement('div');
+    legacy.className = 'date-time-legacy';
+    legacy.id = 'datetime-legacy-' + field.id;
+    const label = appendText(legacy, 'label', '', field.displayLabel || '晤談時間');
+    label.htmlFor = 'input-' + field.id;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'input-' + field.id;
+    input.name = field.id;
+    input.dataset.field = field.id;
+    input.dataset.component = 'legacy';
+    input.maxLength = MAX_TEXT;
+    input.autocomplete = 'off';
+    input.setAttribute('aria-label', labelPrefix + '－晤談時間（原填寫）');
+    legacy.append(input);
+    const toggle = appendText(legacy, 'button', 'button date-time-switch', '改用日期與時間');
+    toggle.id = 'datetime-switch-' + field.id;
+    toggle.type = 'button';
+    toggle.setAttribute('aria-controls', pickers.id);
+    toggle.addEventListener('click', () => {
+      const key = dateTimeModeKey(field);
+      if (!pickers.hidden) dateTimeModes.set(key, 'legacy');
+      else dateTimeModes.set(key, parseDateTime(getActive().answers[field.id] || '') === null ? 'pending' : 'picker');
+      populateDateTimeField(field);
+      $(pickers.hidden ? 'input-' + field.id : 'input-' + field.id + '-date').focus();
+    });
+    wrapper.append(pickers, legacy);
+  }
   function updateProgress() {
     const answers = getActive().answers;
     const enabledFields = fieldList.filter(field => isFieldEnabled(field, answers));
@@ -209,10 +296,32 @@
       h2.id = 'heading-' + index;
       block.append(heading);
       if (section.description) appendText(block, 'p', 'section-description', section.description);
+      const respondentContainers = new Map();
       for (const field of section.fields) {
+        const respondent = (section.respondentRows || []).find(row => row.fields.includes(field.id));
+        let fieldParent = block;
+        if (respondent) {
+          if (!respondentContainers.has(respondent.id)) {
+            const group = document.createElement('fieldset');
+            group.className = 'respondent-row';
+            group.id = 'respondent-' + respondent.id;
+            appendText(group, 'legend', '', respondent.title);
+            const grid = document.createElement('div');
+            grid.className = 'respondent-grid';
+            group.append(grid);
+            block.append(group);
+            respondentContainers.set(respondent.id, grid);
+          }
+          fieldParent = respondentContainers.get(respondent.id);
+        }
         const wrapper = document.createElement('div');
         wrapper.className = 'field' + (field.optional === true ? ' optional-field' : '');
         const inputId = 'input-' + field.id;
+        if (field.type === 'date-time') {
+          buildDateTimeField(field, wrapper, respondent?.labelPrefix || field.label);
+          fieldParent.append(wrapper);
+          continue;
+        }
         if (field.optional === true) {
           wrapper.id = 'optional-' + field.id;
           wrapper.hidden = !isFieldEnabled(field, getActive().answers);
@@ -235,7 +344,7 @@
             labelContainer.className = 'optional-field-heading';
             container.append(labelContainer);
           }
-          const label = appendText(labelContainer, 'label', '', field.label);
+          const label = appendText(labelContainer, 'label', '', field.displayLabel || field.label);
           label.htmlFor = inputId;
           if (field.optional === true) {
             const removeButton = appendText(labelContainer, 'button', 'button optional-remove', '移除');
@@ -271,10 +380,11 @@
           else { control.type = field.type === 'date' ? 'date' : 'text'; if (control.type === 'text') control.maxLength = MAX_TEXT; }
           control.autocomplete = 'off';
           control.spellcheck = false;
+          if (respondent) control.setAttribute('aria-label', respondent.labelPrefix + '－' + (field.displayLabel || field.label));
           if (field.hint) control.setAttribute('aria-describedby', inputId + '-hint');
           container.append(control);
         }
-        block.append(wrapper);
+        fieldParent.append(wrapper);
       }
       form.append(block);
     }
@@ -295,10 +405,12 @@
   function populateForm() {
     const answers = getActive().answers;
     for (const control of $('interview-form').querySelectorAll('[data-field]')) {
+      if (control.dataset.component) continue;
       const value = answers[control.dataset.field];
       if (control.type === 'checkbox') control.checked = Array.isArray(value) && value.includes(control.value);
       else control.value = typeof value === 'string' ? value : '';
     }
+    fieldList.filter(field => field.type === 'date-time').forEach(populateDateTimeField);
     updateOptionalFields(); renderDrafts(); updateProgress();
   }
   function handleInput(event) {
@@ -308,7 +420,21 @@
     if (!field) return;
     const active = getActive();
     if (!isFieldEnabled(field, active.answers)) return;
-    if (field.type === 'checkboxes') {
+    if (field.type === 'date-time') {
+      if (control.dataset.component === 'legacy') {
+        dateTimeModes.set(dateTimeModeKey(field), 'legacy');
+        active.answers[field.id] = control.value;
+      } else {
+        const date = $('input-' + field.id + '-date');
+        const time = $('input-' + field.id + '-time');
+        if (date.validity.badInput || time.validity.badInput || time.validity.stepMismatch) return;
+        const value = composeDateTime(date.value, time.value);
+        if (value === null || (parseDateTime(active.answers[field.id] || '') === null && value === '')) return;
+        active.answers[field.id] = value;
+        dateTimeModes.delete(dateTimeModeKey(field));
+        populateDateTimeField(field);
+      }
+    } else if (field.type === 'checkboxes') {
       active.answers[field.id] = Array.from($('interview-form').querySelectorAll('input[type="checkbox"]')).filter(input => input.dataset.field === field.id && input.checked).map(input => input.value);
     } else active.answers[field.id] = control.value;
     active.updatedAt = now();
@@ -512,6 +638,6 @@
     }catch(error){$('fatal-error').textContent=error.message||'目前無法載入表單，請返回小工具箱重試。';$('fatal-error').hidden=false;}
   }
   // Exposed pure functions enable package-integrity and import-validation tests.
-  window.AssessmentFormUtils=Object.freeze({validateAnswers,validateBackup,validateStore,exportText,isFieldEnabled});
+  window.AssessmentFormUtils=Object.freeze({validateAnswers,validateBackup,validateStore,exportText,isFieldEnabled,parseDateTime,composeDateTime});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
